@@ -1,0 +1,26 @@
+//@version=5
+strategy("EMA Breakdown Strategy", overlay=true)
+
+// Inputs
+emaLength = input(5, title="EMA Length")
+alertColor = color.red
+sellColor = color.blue
+
+// Calculate EMA
+emaValue = ta.ema(close, emaLength)
+
+// Mark alert candles
+isAlertCandle = low > emaValue and low[1] <= emaValue
+plotshape(isAlertCandle, title="Alert Candle", location=location.abovebar, color=alertColor, style=shape.labeldown, text="Alert")
+
+// Generate sell signal
+sellSignal = high > high[1] and isAlertCandle
+plotshape(sellSignal, title="Sell Signal", location=location.abovebar, color=sellColor, style=shape.labelup, text="Sell")
+
+// Set stop loss and take profit levels
+stopLossLevel = high
+takeProfitLevel = close - (high - close) * 3
+
+// Strategy orders
+strategy.entry("Sell", strategy.short, when=sellSignal)
+strategy.exit("Exit", "Sell", stop=stopLossLevel, limit=takeProfitLevel)
